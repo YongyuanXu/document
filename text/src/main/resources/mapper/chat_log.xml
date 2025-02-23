@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.text.mapper.ChatLogMapper">
+
+    <resultMap id="ChatLogResultMap" type="com.example.text.pojo.output.ChatLogOutput">
+        <id property="id" column="id"/>
+        <result property="chatId" column="chat_id" jdbcType="VARCHAR" javaType="String"/>
+        <result property="userName" column="user_name"/>
+        <result property="lastChatId" column="last_chat_id"/>
+        <result property="firstChatId" column="first_chat_id"/>
+        <result property="role" column="role"/>
+        <result property="content" column="content"/>
+        <result property="model" column="model"/>
+        <result property="promptTokens" column="prompt_tokens"/>
+        <result property="completionTokens" column="completion_tokens"/>
+        <result property="totalTokens" column="total_tokens"/>
+        <result property="cachedTokens" column="cached_tokens"/>
+        <result property="reasoningTokens" column="reasoning_tokens"/>
+        <result property="promptCacheHitTokens" column="prompt_cache_hit_tokens"/>
+        <result property="promptCacheMissTokens" column="prompt_cache_miss_tokens"/>
+        <result property="systemFingerprint" column="system_fingerprint"/>
+        <result property="chatTimestamp" column="chat_timestamp"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+
+    <sql id="ChatLogColumns">
+        id as id,
+        chat_id as chatId,
+        user_name as userName,
+        last_chat_id as lastChatId,
+        first_chat_id as firstChatId,
+        role as role,
+        content as content,
+        model as model,
+        prompt_tokens as promptTokens,
+        completion_tokens as completionTokens,
+        total_tokens as totalTokens,
+        cached_tokens as cachedTokens,
+        reasoning_tokens as reasoningTokens,
+        prompt_cache_hit_tokens as promptCacheHitTokens,
+        prompt_cache_miss_tokens as promptCacheMissTokens,
+        system_fingerprint as systemFingerprint,
+        chat_timestamp as chatTimestamp,
+        delete_flag as deleteFlag
+    </sql>
+
+
+    <select id="selectAll" resultMap="ChatLogResultMap">
+        SELECT
+        <include refid="ChatLogColumns"/>
+        FROM chat_log
+        WHERE delete_flag = 0
+        AND last_chat_id IS null
+        ORDER BY chat_timestamp DESC
+    </select>
+
+    <select id="selectByIds" parameterType="com.example.text.pojo.dto.GptQueryDto" resultMap="ChatLogResultMap">
+        SELECT
+        <include refid="ChatLogColumns"/>
+        FROM chat_log WHERE 1 = 1
+        <if test="firstChatId != null and firstChatId != ''">
+            AND first_chat_id = #{firstChatId}
+        </if>
+        <if test="chatId != null and chatId != ''">
+            AND chat_id = #{chatId}
+        </if>
+        ORDER BY chat_timestamp DESC
+    </select>
+
+    <insert id="insert" parameterType="com.example.text.pojo.input.ChatLogInput">
+        INSERT INTO chat_log (
+        chat_id, user_name, last_chat_id, first_chat_id, role, content, model, prompt_tokens,
+        completion_tokens, total_tokens, cached_tokens, reasoning_tokens,
+        prompt_cache_hit_tokens, prompt_cache_miss_tokens,
+        system_fingerprint, chat_timestamp, delete_flag
+        ) VALUES (
+        #{chatId}, #{userName}, #{lastChatId}, #{firstChatId}, #{role}, #{content}, #{model}, #{promptTokens},
+        #{completionTokens}, #{totalTokens}, #{cachedTokens}, #{reasoningTokens},
+        #{promptCacheHitTokens}, #{promptCacheMissTokens},
+        #{systemFingerprint}, #{chatTimestamp}, #{deleteFlag}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.example.text.pojo.input.ChatLogInput">
+        UPDATE chat_log SET
+        <set>
+            <if test="deleteFlag != null and deleteFlag != ''">
+                delete_flag = #{deleteFlag},
+            </if>
+            <if test="lastChatId != null and lastChatId != ''">
+                last_chat_id = #{lastChatId},
+            </if>
+        </set>
+        WHERE chat_id = #{chatId}
+    </update>
+
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM chat_log WHERE id = #{id}
+    </delete>
+
+</mapper>

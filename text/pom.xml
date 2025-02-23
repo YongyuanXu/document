@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.document</groupId>
         <artifactId>document</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>com.text</groupId>
@@ -28,7 +28,11 @@
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${com.alibaba.fastjson2.version}</version>
+        </dependency>
     </dependencies>
 
 
