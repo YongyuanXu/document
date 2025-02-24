@@ -43,6 +43,7 @@ public class GptServiceImpl implements GptService {
         JSONObject rawResp = httpService.sendRequest(url, HttpMethod.POST, createGptHeaders(), createGptRequestBody(dto));
         DeepSeedResponse response = JSONObject.parseObject(rawResp.toJSONString(), DeepSeedResponse.class);
         saveMsg(dto, response);
+        System.out.println();
         return response;
     }
 
