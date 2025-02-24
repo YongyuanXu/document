@@ -41,6 +41,7 @@ public class GptServiceImpl implements GptService {
         DeepSeedResponse response = JSONObject.parseObject(rawResp.toJSONString(), DeepSeedResponse.class);
         checkResp(response);
         saveMsg(dto, response);
+        System.out.println();
         return response;
     }
 
