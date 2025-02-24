@@ -14,13 +14,7 @@ public class ChatLogOutput {
     private String role;
     private String content;
     private String model;
-    private Integer promptTokens;
-    private Integer completionTokens;
-    private Integer totalTokens;
-    private Integer cachedTokens;
-    private Integer reasoningTokens;
-    private Integer promptCacheHitTokens;
-    private Integer promptCacheMissTokens;
+    private String totalTokens;
     private String systemFingerprint;
     private String chatTimestamp;
     private Integer deleteFlag;

@@ -14,13 +14,7 @@
         <result property="role" column="role"/>
         <result property="content" column="content"/>
         <result property="model" column="model"/>
-        <result property="promptTokens" column="prompt_tokens"/>
-        <result property="completionTokens" column="completion_tokens"/>
         <result property="totalTokens" column="total_tokens"/>
-        <result property="cachedTokens" column="cached_tokens"/>
-        <result property="reasoningTokens" column="reasoning_tokens"/>
-        <result property="promptCacheHitTokens" column="prompt_cache_hit_tokens"/>
-        <result property="promptCacheMissTokens" column="prompt_cache_miss_tokens"/>
         <result property="systemFingerprint" column="system_fingerprint"/>
         <result property="chatTimestamp" column="chat_timestamp"/>
         <result property="deleteFlag" column="delete_flag"/>
@@ -35,13 +29,7 @@
         role as role,
         content as content,
         model as model,
-        prompt_tokens as promptTokens,
-        completion_tokens as completionTokens,
         total_tokens as totalTokens,
-        cached_tokens as cachedTokens,
-        reasoning_tokens as reasoningTokens,
-        prompt_cache_hit_tokens as promptCacheHitTokens,
-        prompt_cache_miss_tokens as promptCacheMissTokens,
         system_fingerprint as systemFingerprint,
         chat_timestamp as chatTimestamp,
         delete_flag as deleteFlag
@@ -57,7 +45,8 @@
         ORDER BY chat_timestamp DESC
     </select>
 
-    <select id="selectByIds" parameterType="com.example.text.pojo.dto.GptQueryDto" resultMap="ChatLogResultMap">
+    <select id="selectByIds" parameterType="com.example.text.pojo.dto.GptQueryDto"
+            resultType="com.example.text.pojo.output.ChatLogOutput">
         SELECT
         <include refid="ChatLogColumns"/>
         FROM chat_log WHERE 1 = 1
@@ -72,15 +61,11 @@
 
     <insert id="insert" parameterType="com.example.text.pojo.input.ChatLogInput">
         INSERT INTO chat_log (
-        chat_id, user_name, last_chat_id, first_chat_id, role, content, model, prompt_tokens,
-        completion_tokens, total_tokens, cached_tokens, reasoning_tokens,
-        prompt_cache_hit_tokens, prompt_cache_miss_tokens,
-        system_fingerprint, chat_timestamp, delete_flag
+        chat_id, user_name, last_chat_id, first_chat_id, role, content, model,
+        total_tokens, system_fingerprint, chat_timestamp, delete_flag
         ) VALUES (
-        #{chatId}, #{userName}, #{lastChatId}, #{firstChatId}, #{role}, #{content}, #{model}, #{promptTokens},
-        #{completionTokens}, #{totalTokens}, #{cachedTokens}, #{reasoningTokens},
-        #{promptCacheHitTokens}, #{promptCacheMissTokens},
-        #{systemFingerprint}, #{chatTimestamp}, #{deleteFlag}
+        #{chatId}, #{userName}, #{lastChatId}, #{firstChatId}, #{role}, #{content}, #{model},
+        #{totalTokens}, #{systemFingerprint}, #{chatTimestamp}, #{deleteFlag}
         )
     </insert>
 

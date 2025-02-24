@@ -2,8 +2,8 @@ package com.example.text.service.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.example.text.constant.YesOrNoEnum;
+import com.example.text.converter.GptConverter;
 import com.example.text.exception.AssertUtils;
-import com.example.text.exception.TextException;
 import com.example.text.exception.TextExceptionEnum;
 import com.example.text.mapper.ChatLogMapper;
 import com.example.text.pojo.dto.GptQueryDto;
@@ -13,9 +13,6 @@ import com.example.text.pojo.input.ChatLogInput;
 import com.example.text.pojo.output.ChatLogOutput;
 import com.example.text.service.GptService;
 import com.example.text.service.common.HttpService;
-import com.example.text.utils.CollectionUtils;
-import com.example.text.utils.UUIDGenerator;
-import org.mapstruct.ap.internal.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -42,8 +39,17 @@ public class GptServiceImpl implements GptService {
         checkParams(dto);
         JSONObject rawResp = httpService.sendRequest(url, HttpMethod.POST, createGptHeaders(), createGptRequestBody(dto));
         DeepSeedResponse response = JSONObject.parseObject(rawResp.toJSONString(), DeepSeedResponse.class);
+        checkResp(response);
         saveMsg(dto, response);
         return response;
+    }
+
+    private void checkResp(DeepSeedResponse response) {
+        AssertUtils.notNull(response, TextExceptionEnum.GPT_RESPONSE_EXCEPTION.getMsg());
+        AssertUtils.notNull(response.getChoices(), TextExceptionEnum.GPT_RESPONSE_EXCEPTION.getMsg());
+        AssertUtils.notNull(response.getChoices().get(0), TextExceptionEnum.GPT_RESPONSE_EXCEPTION.getMsg());
+        AssertUtils.notNull(response.getChoices().get(0).getMessage(), TextExceptionEnum.GPT_RESPONSE_EXCEPTION.getMsg());
+        AssertUtils.notNull(response.getChoices().get(0).getMessage().getContent(), TextExceptionEnum.GPT_RESPONSE_EXCEPTION.getMsg());
     }
 
     private void checkParams(GptSendDto dto) {
@@ -54,30 +60,19 @@ public class GptServiceImpl implements GptService {
     }
 
     private void saveMsg(GptSendDto dto, DeepSeedResponse response) {
-        ChatLogInput input = new ChatLogInput(dto);
-        setChatId(input, dto);
-        String content = response.getChoices().get(0).getMessage().getContent();
-        chatLogMapper.insert(input);
-    }
-
-    private void setChatId(ChatLogInput input, GptSendDto dto) {
-        input.setChatId(UUIDGenerator.generateUUID());
-        if (dto.getIsFirstChat() == YesOrNoEnum.Y) {
-            input.setFirstChatId(input.getChatId());
-            return;
-        }
-        List<ChatLogOutput> outputs = chatLogMapper.selectByIds(new GptQueryDto(dto.getLastChatId(), null));
-        AssertUtils.isOneItem(outputs, TextExceptionEnum.GPT_RECORDS_EXCEPTION.getMsg());
-        input.setLastChatId(dto.getLastChatId());
-        input.setFirstChatId(outputs.get(0).getFirstChatId());
+        ChatLogInput userInput = GptConverter.convert(dto);
+        ChatLogInput systemInput = GptConverter.convert(userInput, response);
+        chatLogMapper.insert(userInput);
+        chatLogMapper.insert(systemInput);
     }
 
     private JSONObject createGptRequestBody(GptSendDto dto) {
         if (dto.getIsFirstChat() == YesOrNoEnum.Y) {
             return firstChatBody(dto);
         }
-        List<ChatLogOutput> chatLogOutputs = chatLogMapper.selectByIds(new GptQueryDto(dto.getLastChatId(), null));
-        AssertUtils.isNotEmpty(chatLogOutputs, TextExceptionEnum.GPT_RECORDS_EXCEPTION.getMsg());
+        List<ChatLogOutput> lastChatOutput = chatLogMapper.selectByIds(new GptQueryDto(dto.getLastChatId(), null));
+        AssertUtils.isNotEmpty(lastChatOutput, TextExceptionEnum.GPT_RECORDS_EXCEPTION.getMsg());
+        List<ChatLogOutput> chatLogOutputs = chatLogMapper.selectByIds(new GptQueryDto(null, lastChatOutput.get(0).getFirstChatId()));
         chatLogOutputs.sort(Comparator.comparing(ChatLogOutput::getChatTimestamp));
         JSONObject body = initChatBody(dto);
         List<Map<String, String>> messages = new ArrayList<>();

@@ -3,7 +3,8 @@ package com.example.text.exception;
 public enum TextExceptionEnum {
 
     GPT_RECORDS_EXCEPTION("400001", "GPT RECORDS SHOULD NOT BE EMPTY"),
-    GPT_PARAMS_EXCEPTION("400002", "GPT PARAMS EXCEPTION");
+    GPT_PARAMS_EXCEPTION("400002", "GPT PARAMS EXCEPTION"),
+    GPT_RESPONSE_EXCEPTION("400002", "GPT RESPONSE EXCEPTION");
 
     private final String code;
     private final String msg;

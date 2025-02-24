@@ -4,6 +4,7 @@ import com.example.text.utils.CollectionUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.List;
+import java.util.Objects;
 
 public class AssertUtils {
 
@@ -24,6 +25,12 @@ public class AssertUtils {
             return;
         }
         throw new TextException(message);
+    }
 
+    public static void notNull(Object obj, String message) {
+        if (Objects.nonNull(obj)) {
+            return;
+        }
+        throw new TextException(message);
     }
 }
